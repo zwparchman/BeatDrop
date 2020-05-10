@@ -1,15 +1,23 @@
-import { SET_SETTINGS_OPEN, SET_INSTALLATION_DIRECTORY, SET_AUTO_LOAD_MORE, SET_OFFLINE_MODE, SET_THEME, SET_THEME_IMAGE, SET_FOLDER_STRUCTURE, SET_UPDATE_CHANNEL, SET_LATEST_RELEASE_NOTES, SET_INSTALLATION_TYPE, SET_GAME_VERSION, SET_PROTON_DIRECTORY, SET_WINEPREFIX_DIRECTORY } from './types'
+import {
+    SET_SETTINGS_OPEN, 
+    SET_INSTALLATION_DIRECTORY,
+    SET_AUTO_LOAD_MORE,
+    SET_OFFLINE_MODE,
+    SET_THEME,
+    SET_THEME_IMAGE,
+    SET_FOLDER_STRUCTURE,
+    SET_UPDATE_CHANNEL,
+    SET_LATEST_RELEASE_NOTES,
+    SET_INSTALLATION_TYPE,
+    SET_GAME_VERSION 
+    SET_PROTON_DIRECTORY,
+    SET_WINEPREFIX_DIRECTORY 
+} from './types'
 
 import { checkDownloadedSongs } from './queueActions'
+import { checkInstalledMods, checkModsForUpdates } from './modActions'
 
 const { ipcRenderer } = window.require('electron')
-
-export const setSettingsOpen = isOpen => dispatch => {
-  dispatch({
-    type: SET_SETTINGS_OPEN,
-    payload: isOpen
-  })
-}
 
 export const setInstallationDirectory = directory => (dispatch, getState) => {
   dispatch({
@@ -17,20 +25,23 @@ export const setInstallationDirectory = directory => (dispatch, getState) => {
     payload: directory
   })
   checkDownloadedSongs()(dispatch, getState)
+  checkInstalledMods()(dispatch, getState)
 }
 
-export const setInstallationType = type => dispatch => {
+export const setInstallationType = type => (dispatch, getState) => {
   dispatch({
     type: SET_INSTALLATION_TYPE,
     payload: type
   })
+  checkModsForUpdates()(dispatch, getState)
 }
 
-export const setGameVersion = version => dispatch => {
+export const setGameVersion = version => (dispatch, getState) => {
   dispatch({
     type: SET_GAME_VERSION,
     payload: version
   })
+  checkModsForUpdates()(dispatch, getState)
 }
 
 export const setAutoLoadMore = willAutoLoadMore => dispatch => {

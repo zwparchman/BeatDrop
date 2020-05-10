@@ -1,10 +1,20 @@
-import { SET_INSTALLATION_DIRECTORY, SET_AUTO_LOAD_MORE, SET_OFFLINE_MODE, SET_SETTINGS_OPEN, SET_THEME, SET_THEME_IMAGE, SET_FOLDER_STRUCTURE, SET_UPDATE_CHANNEL, SET_LATEST_RELEASE_NOTES, SET_INSTALLATION_TYPE, SET_GAME_VERSION, SET_PROTON_DIRECTORY, SET_WINEPREFIX_DIRECTORY } from '../actions/types'
+import {
+    SET_INSTALLATION_DIRECTORY,
+    SET_AUTO_LOAD_MORE,
+    SET_OFFLINE_MODE,
+    SET_THEME,
+    SET_THEME_IMAGE,
+    SET_FOLDER_STRUCTURE,
+    SET_UPDATE_CHANNEL,
+    SET_LATEST_RELEASE_NOTES,
+    SET_INSTALLATION_TYPE,
+    SET_GAME_VERSION,
+    SET_PROTON_DIRECTORY,
+    SET_WINEPREFIX_DIRECTORY 
+} from '../actions/types'
 
 const initialState = {
-  isOpen: false,
-  installationDirectory: "~/.steam/steam/steamapps/common/Beat Saber",
-  protonDirectory: "~/.steam/steam/steamapps/common/Proton 3.7",
-  winePrefixDirectory: "~/.wine",
+  installationDirectory: "Please Choose a Folder...",
   installationType: "choose",
   gameVersion: "choose",
   autoLoadMore: true,
@@ -13,16 +23,13 @@ const initialState = {
   themeImagePath: '',
   folderStructure: 'keySongNameArtistName',
   updateChannel: 'latest',
-  latestReleaseNotes: '0.0.0'
+  latestReleaseNotes: '0.0.0',
+  protonDirectory: "~/.steam/steam/steamapps/common/Proton 3.7",
+  winePrefixDirectory: "~/.wine"
 }
 
 export default function(state = initialState, action) {
   switch(action.type) {
-    case SET_SETTINGS_OPEN:
-      return {
-        ...state,
-        isOpen: action.payload
-      }
     case SET_INSTALLATION_DIRECTORY:
       return {
         ...state,

@@ -1,5 +1,6 @@
-import { SET_QUEUE_OPEN, ADD_TO_QUEUE, CLEAR_QUEUE, UPDATE_PROGRESS, SET_DOWNLOADED_SONGS, SET_DOWNLOADING_COUNT, SET_WAIT_LIST, DISPLAY_WARNING, SET_SCANNING_FOR_SONGS, SET_DISCOVERED_FILES, SET_PROCESSED_FILES } from './types'
+import { ADD_TO_QUEUE, CLEAR_QUEUE, UPDATE_PROGRESS, SET_DOWNLOADED_SONGS, SET_DOWNLOADING_COUNT, SET_WAIT_LIST, DISPLAY_WARNING, SET_SCANNING_FOR_SONGS, SET_DISCOVERED_FILES, SET_PROCESSED_FILES } from './types'
 import { SONG_LIST } from '../constants/views'
+import { BEATSAVER_BASE_URL } from '../constants/urls'
 import { isModInstalled, installEssentialMods } from './modActions'
 import { setView } from './viewActions'
 
@@ -11,13 +12,6 @@ const AdmZip = remote.require('adm-zip')
 const request = remote.require('request')
 const rimraf = remote.require('rimraf')
 
-export const setQueueOpen = open => dispatch => {
-  dispatch({
-    type: SET_QUEUE_OPEN,
-    payload: open
-  })
-}
-
 /**
  * Downloads a song.
  * @param {string} identity The hash/key of the song to download
@@ -26,7 +20,7 @@ export const downloadSong = (identity) => (dispatch, getState) => {
   if(!isModInstalled('SongLoader')(dispatch, getState)) installEssentialMods()(dispatch, getState)
   let hash = identity
   if(identity) {
-    fetch(`https://beatsaver.com/api/maps/by-hash/${hash}`)
+    fetch(`${BEATSAVER_BASE_URL}/api/maps/by-hash/${hash}`)
       .then(res => res.json())
       .then(song => {
         hash = song.hash
@@ -46,7 +40,7 @@ export const downloadSong = (identity) => (dispatch, getState) => {
         setTimeout(() => {
           document.getElementById('queue-button').classList.remove('notify')
         }, 1000)
-        fetch(`https://beatsaver.com/api/maps/by-hash/${hash}`)
+        fetch(`${BEATSAVER_BASE_URL}/api/maps/by-hash/${hash}`)
           .then(res =>  res.json())
           .then(song => {
             let utc = Date.now()
@@ -56,13 +50,13 @@ export const downloadSong = (identity) => (dispatch, getState) => {
                 payload: { 
                   utc,
                   hash: song.hash,
-                  image: `https://www.beatsaver.com${ song.coverURL }`,
+                  image: `${BEATSAVER_BASE_URL}${ song.coverURL }`,
                   title: song.metadata.songName,
                   author: song.metadata.songAuthorName
                 }
               })
               let req = request.get({
-                url: `http://www.beatsaver.com${song.downloadURL}`,
+                url: `${BEATSAVER_BASE_URL}${song.downloadURL}`,
                 encoding: null
               }, (err, r, data) => {
                 try {
@@ -101,7 +95,7 @@ export const downloadSong = (identity) => (dispatch, getState) => {
                 let extractTo
                 switch(getState().settings.folderStructure) {
                   case 'keySongNameArtistName':
-                    extractTo = `${ song.key } (${ song.metadata.songName.replace(/[\\/:*?"<>|.]/g, '') } - ${ song.metadata.songAuthorName })`
+                    extractTo = `${ song.key } (${ song.metadata.songName.replace(/[\\/:*?"<>|.]/g, '') } - ${ song.metadata.songAuthorName.replace(/[\\/:*?"<>|.]/g, '') })`
                     break
                   case 'key':
                     extractTo = song.key
@@ -110,7 +104,7 @@ export const downloadSong = (identity) => (dispatch, getState) => {
                     extractTo = song.name.replace(/[\\/:*?"<>|.]/g, '')
                     break
                   default:
-                    extractTo = `${ song.key } (${ song.name.replace(/[\\/:*?"<>|.]/g, '') } - ${ song.songAuthorName })`
+                    extractTo = `${ song.key } (${ song.name.replace(/[\\/:*?"<>|.]/g, '') } - ${ song.songAuthorName.replace(/[\\/:*?"<>|.]/g, '') })`
                     break
                 }
                 zip.extractAllTo(path.join(getState().settings.installationDirectory, 'Beat Saber_Data', 'CustomLevels', extractTo))
@@ -244,7 +238,7 @@ export const downloadSong = (identity) => (dispatch, getState) => {
     setTimeout(() => {
       document.getElementById('queue-button').classList.remove('notify')
     }, 1000)
-    fetch(`https://beatsaver.com/api/maps/by-hash/${hash}`)
+    fetch(`${BEATSAVER_BASE_URL}/api/maps/by-hash/${hash}`)
       .then(res =>  res.json())
       .then(song => {
         let utc = Date.now()
@@ -253,13 +247,13 @@ export const downloadSong = (identity) => (dispatch, getState) => {
           payload: { 
             utc,
             hash: song.hash,
-            image: `https://www.beatsaver.com${ song.coverURL }`,
+            image: `${BEATSAVER_BASE_URL}${ song.coverURL }`,
             title: song.metadata.songName,
             author: song.metadata.songAuthorName
           }
         })
         let req = request.get({
-          url: `https://beatsaver.com/${ song.downloadURL }`,
+          url: `${BEATSAVER_BASE_URL}/${ song.downloadURL }`,
           encoding: null
         }, (err, r, data) => {
           try {
@@ -396,7 +390,7 @@ export const deleteSong = (identity) => (dispatch, getState) => {
   if(getState().songs.downloadedSongs.some(song => song.hash === identity)) {
     file = getState().songs.downloadedSongs[getState().songs.downloadedSongs.findIndex(song => song.hash === identity)].file
   }
-  setView(getState().view.previousView)(dispatch)
+  setView(getState().view.previousView)(dispatch, getState)
   let dirs = file.split(path.sep)
   let cld = dirs.indexOf('CustomLevels')
   for(let i = 2; i < file.split(path.sep).length - cld; i++) {
@@ -414,7 +408,7 @@ export const deleteSong = (identity) => (dispatch, getState) => {
       })
       return
     }
-    setView(SONG_LIST)(dispatch)
+    setView(SONG_LIST)(dispatch, getState)
     dispatch({
       type: SET_DOWNLOADED_SONGS,
       payload: downloadedSongs
